@@ -1,0 +1,41 @@
+#Importing Libraries
+import cv2
+
+#Defining image
+img=cv2.imread('car.png')
+
+#Data Manipulation
+classNames=[]
+classFile='coco.names'
+#Read's file,strip and split for list('coco.names')
+with open(classFile,'rt') as f:
+    classNames=f.read().rstrip('\n').split('\n')
+
+#Configuration path for object detection model to detect
+configPath='ssd_mobilenet_v3_large_coco_2020_01_14.pbtxt'
+#Defines graph(serialized graph) for best accuracy
+weightsPath='frozen_inference_graph.pb
+
+#Reading the net
+net=cv2.dnn_DetectionModel(weightsPath,configPath)
+
+#Processing of Input Images
+net.setInputSize(320,320)
+net.setInputScale(1.0/127.5)
+net.setInputMean((127.5,127.5,127.5))
+net.setInputSwapRB(True)
+
+#Application Programming Interface for object detection networks
+classIds,confs,bbox=net.detect(img,confThreshold=0.5)
+
+#using zip function for the loop classIds.flatten(),confs.flatten(),bbox to be in a single loop
+for classId,confidence,box in zip(classIds.flatten(),confs.flatten(),bbox):
+    #Creating rectangle
+    cv2.rectangle(img,box,color=(0,255,255),thickness=2)
+    #Writing the name on the image
+    cv2.putText(img,classNames[classId-1].upper(),(box[0]+10,box[1]+30),
+               cv2.FONT_HERSHEY_COMPLEX,1,(0,0,0),2)
+
+#Displaying the image
+cv2.imshow('Object Detection App',img)
+cv2.waitKey(0)
